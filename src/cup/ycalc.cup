@@ -1,0 +1,287 @@
+/* ----------------------User code--------------------*/
+
+package src;
+import java.util.ArrayList;
+   
+/* ------------Grammar symbol declarations----------- */
+   
+terminal                PLUS, MINUS, TIMES, DIVIDE, LPAREN, RPAREN;
+terminal Double         NUMBER;
+non terminal ParseTree      P;
+non terminal ParseTree      E, T, F, K, J, L, M;
+/* non terminal Token   E, T, F; */
+ 
+/* ------------Grammar rules----------- */
+
+P   ::= E:e 
+        {:  
+            RESULT = e;
+        :};
+   
+E   ::= E:e MINUS T:t
+        {:
+          ParseTree pt = new ParseTree();
+          pt.setType("Infix");
+          pt.setToken("E");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree minus = new ParseTree();
+          minus.setToken(" MINUS ");
+          minus.setType("Infix");
+          pts.add(e);
+          pts.add(minus);
+          pts.add(t);
+          RESULT = pt;
+        :}
+        |E:e PLUS T:t
+        {:
+          ParseTree pt = new ParseTree();
+          pt.setType("Infix");
+          pt.setToken("   E   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree plus = new ParseTree();
+          plus.setToken("PLUS");
+          plus.setType("Infix");
+          pts.add(e);
+          pts.add(plus);
+          pts.add(t);
+          RESULT = pt;
+        :}
+        |T:t
+        {:  
+          ParseTree pt = new ParseTree();
+          pt.setType("Infix");
+          pt.setToken("   E   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          pts.add(t);
+          RESULT = pt;
+        :};
+
+T   ::= T:t DIVIDE F:f
+        {:
+          ParseTree pt = new ParseTree();
+          pt.setType("Infix");
+          pt.setToken("   T   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree divide = new ParseTree();
+          divide.setToken("DIVIDE");
+          divide.setType("Infix");
+          pts.add(t);
+          pts.add(divide);
+          pts.add(f);
+          RESULT = pt;
+        :}
+        |T:t TIMES F:f
+        {:
+          ParseTree pt = new ParseTree();
+          pt.setType("Infix");
+          pt.setToken("   T   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree times = new ParseTree();
+          times.setToken(" TIMES ");
+          times.setType("Infix");
+          pts.add(t);
+          pts.add(times);
+          pts.add(f);
+          RESULT = pt;
+        :}
+        |F:f
+        {:
+          ParseTree pt = new ParseTree();
+          pt.setType("Infix");
+          pt.setToken("   T   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          pts.add(f);
+          RESULT = pt;
+        :};
+
+F   ::=  LPAREN E:e RPAREN
+        {:
+          ParseTree pt = new ParseTree();
+          pt.setType("Infix");
+          pt.setToken("   F   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree lparen = new ParseTree();
+          lparen.setToken("LPAREN");
+          lparen.setType("Infix");
+          pts.add(lparen);
+          pts.add(e);
+          ParseTree rparen = new ParseTree();
+          rparen.setType("Infix");
+          rparen.setToken("RPAREN");
+          pts.add(rparen);
+          RESULT = pt;
+        :} 
+        | NUMBER:n
+        {:  
+          ParseTree pt = new ParseTree();
+          pt.setType("Infix");
+          pt.setToken("   F   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree number = new ParseTree();
+          number.setToken("NUMBER");
+          number.setType("Infix");
+          number.setLexeme(n);
+          pts.add(number);
+          RESULT = pt;
+        :};
+
+/* Postfix */
+P   ::= L:l
+        {:
+            RESULT = l;
+        :};
+
+L   ::= K:k1 K:k2 PLUS 
+        {:  
+          ParseTree pt = new ParseTree();
+          pt.setType("Postfix");
+          pt.setToken("   L   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree plus = new ParseTree();
+          plus.setToken(" PLUS ");
+          pts.add(k1);
+          pts.add(k2);
+          pts.add(plus);
+          RESULT = pt;
+        :}
+        | K:k1 K:k2 MINUS
+        {:
+            ParseTree pt = new ParseTree();
+          pt.setType("Postfix");
+          pt.setToken("   L   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree minus = new ParseTree();
+          minus.setToken(" MINUS ");
+          pts.add(k1);
+          pts.add(k2);
+          pts.add(minus);
+          RESULT = pt;
+        :}
+        | K:k1 K:k2 TIMES
+        {:
+            ParseTree pt = new ParseTree();
+          pt.setType("Postfix");
+          pt.setToken("   L   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree times = new ParseTree();
+          times.setToken(" TIMES ");
+          pts.add(k1);
+          pts.add(k2);
+          pts.add(times);
+          RESULT = pt;
+        :}
+        | K:k1 K:k2 DIVIDE
+        {:
+          ParseTree pt = new ParseTree();
+          pt.setType("Postfix");
+          pt.setToken("   L   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree divide = new ParseTree();
+          divide.setToken("DIVIDE");
+          pts.add(k1);
+          pts.add(k2);
+          pts.add(divide);
+          RESULT = pt;
+        :};
+
+K   ::= L:l
+        {:
+          RESULT = l;
+        :};
+        
+K   ::= NUMBER:n
+        {:  
+          ParseTree pt = new ParseTree();
+          pt.setType("Postfix");
+          pt.setToken("   K   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree number = new ParseTree();
+          number.setToken("NUMBER");
+          number.setType("Postfix");
+          number.setLexeme(n);
+          pts.add(number);
+          RESULT = pt;
+        :};
+
+/* Prefix */
+P   ::= M:m
+        {:
+            RESULT = m;
+        :};
+
+M   ::= PLUS J:j1 J:j2 
+        {:  
+            ParseTree pt = new ParseTree();
+          pt.setType("Prefix");
+          pt.setToken("   M   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree plus = new ParseTree();
+          plus.setType("Prefix");
+          plus.setToken(" PLUS ");
+          pts.add(plus);
+          pts.add(j1);
+          pts.add(j2);
+          RESULT = pt;
+        :}
+        | MINUS J:j1 J:j2 
+        {:
+          ParseTree pt = new ParseTree();
+          pt.setType("Prefix");
+          pt.setToken("   M   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree minus = new ParseTree();
+          minus.setToken(" MINUS ");
+          minus.setType("Prefix");
+          pts.add(minus);
+          pts.add(j1);
+          pts.add(j2);
+          RESULT = pt;
+        :}
+        | TIMES J:j1 J:j2
+        {:
+          ParseTree pt = new ParseTree();
+          pt.setType("Prefix");
+          pt.setToken("   M   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree times = new ParseTree();
+          times.setToken(" TIMES");
+          times.setType("Prefix");
+          pts.add(times);
+          pts.add(j1);
+          pts.add(j2);
+          RESULT = pt;
+        :}
+        | DIVIDE J:j1 J:j2
+        {:
+            ParseTree pt = new ParseTree();
+          pt.setType("Prefix");
+          pt.setToken("   M   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree divide = new ParseTree();
+          divide.setToken("DIVIDE");
+          divide.setType("Prefix");
+          pts.add(divide);
+          pts.add(j1);
+          pts.add(j2);
+          RESULT = pt;
+        :};
+
+J   ::= M:m
+        {:
+          RESULT = m;
+        :};
+
+J   ::= NUMBER:n
+        {:  
+          ParseTree pt = new ParseTree();
+          pt.setType("Prefix");
+          pt.setToken("   J   ");
+          ArrayList<ParseTree> pts = pt.getNodes();
+          ParseTree number = new ParseTree();
+          number.setToken("NUMBER");
+          number.setType("Prefix");
+          number.setLexeme(n);
+          pts.add(number);
+          RESULT = pt;
+        :};
+        
